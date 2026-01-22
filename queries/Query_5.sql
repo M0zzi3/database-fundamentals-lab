@@ -1,0 +1,5 @@
+USE master
+CREATE LOGIN loginX WITH PASSWORD =N'NewPassword1!';
+ALTER LOGIN loginX ENABLE
+USE Northwind2019
+CREATE USER userX FOR LOGIN loginX;

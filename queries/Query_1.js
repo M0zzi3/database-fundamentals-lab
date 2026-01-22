@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM movies.video WHERE genre = 'Comedy';

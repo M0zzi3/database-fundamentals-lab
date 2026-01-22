@@ -1,0 +1,90 @@
+-- Q1
+SELECT e.LastName    AS Employee,
+       e.City        AS stad,
+       s.CompanyName AS shipper,
+       COUNT(*)      AS [Number of Shippings]
+    FROM Employees e
+             INNER JOIN Orders o ON e.EmployeeID = o.EmployeeID
+             INNER JOIN Shippers s ON o.ShipVia = s.ShipperID
+    WHERE (e.City LIKE 'L%'
+        OR e.City LIKE 'S%')
+    GROUP BY e.LastName, e.City, s.CompanyName
+    HAVING COUNT(*) > 35
+    ORDER BY 1, 4 DESC;
+
+-- Q2
+SELECT e.LastName,
+       e.FirstName,
+       e.City
+    FROM Employees e
+             INNER JOIN Orders o ON e.EmployeeID = o.EmployeeID
+    WHERE Country LIKE 'USA'
+    GROUP BY E.LastName, e.FirstName, e.City
+    HAVING COUNT(o.OrderID) > 100
+       AND COUNT(o.OrderID) < 200
+    ORDER BY LastName
+
+-- Q3
+SELECT e.LastName AS [Last Name],
+       COUNT(*)   AS [Number of Orders]
+    FROM Employees e
+             INNER JOIN Orders o ON e.EmployeeID = o.EmployeeID
+    GROUP BY LastName
+    HAVING COUNT(*) = (SELECT MAX(NbrOFORders)
+                           FROM (SELECT COUNT(*) AS NbrOFORders
+                                     FROM Employees e
+                                              INNER JOIN Orders o ON e.EmployeeID = o.EmployeeID
+                                     GROUP BY e.EmployeeID) AS LNNOR)
+    ORDER BY LastName
+
+-- Q4
+-- 1
+SELECT *
+    INTO ProductsCopy
+    FROM Products;
+
+-- 2
+UPDATE ProductsCopy
+SET Discontinued = 1
+    WHERE ProductID IN (SELECT ProductID
+                            FROM ProductsCopy p
+                                     INNER JOIN Suppliers s ON p.SupplierID = s.SupplierID
+                            WHERE CompanyName LIKE 'Specialty Biscuits, Ltd.');
+
+-- 3
+UPDATE ProductsCopy
+SET CurrentUnitPrice = CurrentUnitPrice * 1.05
+    WHERE ProductID IN (SELECT ProductID
+                            FROM ProductsCopy
+                            WHERE SupplierID IN (SELECT SupplierID
+                                                     FROM Suppliers
+                                                     WHERE Country LIKE 'UK'
+                                                       AND CompanyName NOT LIKE 'Specialty Biscuits, Ltd.'))
+
+-- 4
+UPDATE ProductsCopy
+SET CurrentUnitCost = CurrentUnitCost * 0.98
+    WHERE ProductID IN (SELECT ProductID
+                            FROM ProductsCopy
+                            WHERE SupplierID IN (SELECT SupplierID
+                                                     FROM Suppliers
+                                                     WHERE CompanyName NOT LIKE 'Specialty Biscuits, Ltd.')
+
+                              AND Discontinued NOT LIKE 1)
+-- 5
+DROP TABLE ProductsCopy
+
+-- Q5
+SELECT OrderID,
+       SUM(UnitPrice * Quantity * (1 - Discount))                                                AS [total amount],
+       (SUM(UnitPrice * Quantity * (1 - Discount))) / (SELECT SUM([total amount])
+                                                           FROM (SELECT SUM(UnitPrice * Quantity * (1 - Discount)) AS [total amount]
+                                                                     FROM [Order Details]
+                                                                     GROUP BY OrderID) AS TAOAR) AS [%contribution]
+    FROM [Order Details]
+    GROUP BY OrderID
+    HAVING (SUM(UnitPrice * Quantity * (1 - Discount))) / (SELECT SUM([total amount])
+                                                               FROM (SELECT SUM(UnitPrice * Quantity * (1 - Discount)) AS [total amount]
+                                                                         FROM [Order Details]
+                                                                         GROUP BY OrderID) AS TAOAR) > 0.007
+    ORDER BY [total amount];

@@ -1,0 +1,22 @@
+db.video.find(
+{
+  genre: {
+    $regex: 'Comedy',
+    $options: 'i'
+  },
+  language: 'English',
+  viewerVotes: {
+    $gte: 100
+  },
+  viewerRating: {
+    $in: [
+      3,
+      3.5,
+      4,
+      4.5
+    ]
+  }
+},
+{
+_id: 0
+})

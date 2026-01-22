@@ -1,0 +1,28 @@
+db.movies_II.aggregate([
+  {
+    $match: {
+      $and: [
+        {
+          countries: {
+            $size: 4
+          }
+        },
+        {
+          countries: {
+            $in: [
+              "Japan"
+            ]
+          }
+        },
+        {
+          runtime: {
+            $gte: 100
+          }
+        }
+      ]
+    }
+  },
+  {
+    $count: "Films in Japan"
+  }
+])
